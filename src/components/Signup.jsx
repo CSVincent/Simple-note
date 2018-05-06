@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import { auth } from '../firebase';
+// import firebase from '../firebase';
+import {Link} from 'react-router-dom';
 
 import { withStyles } from 'material-ui/styles';
 import Button from 'material-ui/Button';
@@ -23,6 +25,7 @@ class Signup extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            curname : "",
             email : "",
             password : ""
         }
@@ -30,17 +33,60 @@ class Signup extends Component {
         this.handleChange = this.handleChange.bind(this);
     }
 
+    // componentWillMount() { auth.onAuthStateChanged(user => {
+    //     if (user) {
+    //         const {curname} = this.state
+    //         user.updateProfile({
+    //             displayName : curname
+    //         });
+    //         this.setState({curname : ""});
+    //     } 
+    //     });
+    // }
+
     onSubmit(event) {
         event.preventDefault();
-        const { email, password } = this.state;
+        const { curname,email, password } = this.state;
+    //     auth.createUserWithEmailAndPassword(email,password)
+    //     .then(function(user){
+    //         return user.updateProfile({displayName : curname});
+    //     }).catch(function(error){
+    //         console.log(error);
+    //         alert(error);
+    //     });
+    // };
         auth.createUserWithEmailAndPassword(email, password)
         .then(authUser => {
+            var user = auth.currentUser;
+            // var credentials = firebase.auth.EmailAuthProvider.credential(
+            //     user.email,
+            //     password
+            // );
+            auth.currentUser.updateProfile({
+                displayName: curname,
+            });
+            // user.reauthenticateWithCredential(credentials);
+            auth.currentUser.sendEmailVerification().then(function(){
+                alert("A verification email has been sent to your email account. Please verify your email with the link provided");
+            }).catch(function(error){
+                alert(error);
+            });
+
+            // auth.onAuthStateChanged(authUser =>{
+            //     if(authUser){
+            //         const {curname} = this.state
+            //         authUser.updateProfile({
+            //             displayName : curname
+            //         });
+            //         this.setState({curname : ""});
+            //     }
+            // })
             console.log(authUser);
         })
         .catch(authError => {
             alert(authError);
         })
-    }
+    };
 
     handleChange = name => event => {
         this.setState({
@@ -49,7 +95,7 @@ class Signup extends Component {
     };
 
     render() {
-        const { email, password } = this.state;
+        const { curname,email, password } = this.state;
         const classes = this.props.classes;
         return (
             <div>
@@ -58,6 +104,16 @@ class Signup extends Component {
                         <Paper className={classes.paper}>
                             <h1>Sign up</h1>
                             <form onSubmit={this.onSubmit} autoComplete="off">
+                                <TextField
+                                  id="curname"
+                                  label="Name"
+                                  className={classes.textField}
+                                  value={curname}
+                                  onChange={this.handleChange('curname')}
+                                  margin="normal"
+                                  type="name"
+                                />
+                                <br />
                                 <TextField
                                   id="email"
                                   label="Email"
@@ -79,6 +135,8 @@ class Signup extends Component {
                                 />
                                 <br />
                                 <Button variant="raised" color="primary" type="submit">Sign up</Button>
+                                &ensp;
+                                <Button color = "default" onClick={() => this.props.history.push("/")}>Back</Button>
                             </form>
                         </Paper>
                     </Grid>
